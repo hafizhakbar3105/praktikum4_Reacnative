@@ -1,161 +1,139 @@
 
-import React from 'react';
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
-
+import React, { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { COLORS, SPACE, TYPO } from '../styles/tokens';
 import DiaryCard from '../components/DiaryCard';
-import happy from '../../assets/moods/happy.png';
-import tiktok from '../../assets/moods/tiktok.png';
+import DiaryDetailModal from '../components/DiaryDetailModal';
+import SearchBar from '../components/SearchBar';
+import EntryForm from '../components/EntryForm';
 
-// Data daftar diary
-const diaryEntries = [
+const INITIAL_ENTRIES = [
   {
     id: 1,
     title: 'Pagi yang Tenang',
-    date: '2025-10-06',
-    preview:
-      'Hari ini aku bangun lebih pagi dan berjalan kaki 20 menit. Udara terasa sejuk...',
-    moodUri: tiktok,
-    mood: 'happy',
+    date: '2026-10-18',
+    preview: 'Jalan pagi 20 menit dan menikmati udara segar.',
+    body: 'Hari ini aku bangun lebih pagi dan berjalan kaki selama 20 menit.',
+    moodImage: require('../../assets/moods/happy.png'),
   },
   {
     id: 2,
     title: 'Produktif di Kampus',
-    date: '2025-10-05',
-    preview:
-      'Menyelesaikan modul praktikum dan berdiskusi dengan tim. Banyak insight baru...',
-    moodUri: 'https://picsum.photos/seed/focus/80',
-    mood: 'focus',
+    date: '2026-10-17',
+    preview: 'Menyelesaikan modul praktikum dan berdiskusi dengan tim.',
+    body: 'Hari ini cukup produktif karena beberapa target perkuliahan selesai.',
+    moodImage: require('../../assets/moods/focus.png'),
   },
   {
     id: 3,
     title: 'Senja di Taman',
-    date: '2025-10-04',
-    preview:
-      'Menikmati senja sambil membaca buku favorit. Warna langit sangat indah...',
-    moodUri: 'https://picsum.photos/seed/calm/80',
-    mood: 'calm',
-  },
-  {
-    id: 4,
-    title: 'Hari yang Menyenangkan',
-    date: '2025-10-03',
-    preview:
-      'Hari ini aku menghabiskan waktu bersama teman-teman. Banyak cerita dan pengalaman seru...',
-    moodUri: 'https://picsum.photos/seed/excited/80',
-    mood: 'excited',
-  },
-  {
-    id: 5,
-    title: 'Malam yang Melelahkan',
-    date: '2025-10-02',
-    preview:
-      'Setelah menyelesaikan berbagai tugas kuliah, akhirnya aku bisa beristirahat dengan tenang...',
-    moodUri: 'https://picsum.photos/seed/tired/80',
-    mood: 'tired',
+    date: '2026-10-16',
+    preview: 'Membaca buku sambil menikmati suasana senja.',
+    body: 'Sore ini saya menikmati waktu di taman sambil membaca buku.',
+    moodImage: require('../../assets/moods/calm.png'),
   },
 ];
 
-// Komponen utama halaman Diary
 export default function DiaryListScreen() {
+  // STATE UTAMA
+  const [entries, setEntries] = useState(INITIAL_ENTRIES);
+  const [query, setQuery] = useState('');
+  const [likedIds, setLikedIds] = useState(new Set());
+  const [selected, setSelected] = useState(null);
+
+  // DERIVED STATE
+  const filtered = useMemo(() => {
+    if (!query.trim()) return entries;
+
+    const q = query.toLowerCase();
+
+    return entries.filter((entry) =>
+      entry.title.toLowerCase().includes(q) ||
+      entry.preview.toLowerCase().includes(q) ||
+      entry.date.toLowerCase().includes(q)
+    );
+  }, [entries, query]);
+
+  const toggleLike = (id) => {
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+
+      return next;
+    });
+  };
+
+  const addEntry = (newEntry) => {
+    setEntries((prev) => [newEntry, ...prev]);
+  };
+
+  const renderItem = ({ item }) => (
+    <DiaryCard
+      title={item.title}
+      date={item.date}
+      preview={item.preview}
+      moodImage={item.moodImage}
+      liked={likedIds.has(item.id)}
+      onToggleLike={() => toggleLike(item.id)}
+      onPress={() => setSelected(item)}
+    />
+  );
+
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Header Buku Harian */}
-      <View style={styles.headerContainer}>
-        <View style={styles.headerText}>
-          <Text style={styles.header}>Buku Harian</Text>
+    <View style={styles.container}>
+      <Text style={styles.header}>Buku Harian</Text>
 
-          <Text style={styles.subtitle}>
-            Catatan kegiatan sehari-hari
-          </Text>
-        </View>
+      <SearchBar onChange={setQuery} />
 
-        {/* Avatar menggunakan gambar happy.png */}
-        <Image
-          source={happy}
-          style={styles.avatar}
-        />
-      </View>
+      <EntryForm onSubmit={addEntry} />
 
-      {/* Daftar kartu diary */}
-      {diaryEntries.map((entry) => (
-        <DiaryCard
-          key={entry.id}
-          title={entry.title}
-          date={entry.date}
-          preview={entry.preview}
-          moodUri={entry.moodUri}
-          mood={entry.mood}
-        />
-      ))}
-    </ScrollView>
+      <FlatList
+        data={filtered}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={
+          <Text style={styles.empty}>Belum ada entri.</Text>
+        }
+      />
+
+      <DiaryDetailModal
+        visible={!!selected}
+        entry={selected}
+        onClose={() => setSelected(null)}
+      />
+    </View>
   );
 }
 
-// Styling halaman Diary
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFBFF',
-  },
-
-  content: {
-    padding: 16,
-    paddingBottom: 30,
-  },
-
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-
-    elevation: 2,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-  },
-
-  headerText: {
-    flex: 1,
+    backgroundColor: COLORS.surface,
   },
 
   header: {
-    fontSize: 24,
+    fontSize: TYPO.h1,
     fontWeight: '700',
-    color: '#273244',
-    marginBottom: 4,
+    paddingHorizontal: SPACE.l,
+    paddingTop: SPACE.l,
+    color: COLORS.text,
   },
 
-  subtitle: {
-    fontSize: 13,
-    color: '#6B7280',
+  listContent: {
+    padding: SPACE.l,
+    gap: SPACE.m,
+    paddingTop: SPACE.m,
   },
 
-  avatar: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    borderWidth: 2,
-    borderColor: '#F3C76A',
-    marginLeft: 12,
+  empty: {
+    textAlign: 'center',
+    color: COLORS.muted,
+    marginTop: 40,
   },
 });

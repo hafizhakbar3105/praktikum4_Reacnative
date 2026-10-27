@@ -7,22 +7,9 @@
 - **Program Studi:** Teknik Informatika
 - **Universitas:** Universitas Muhammadiyah Sukabumi
 - **Mata Kuliah:** Pemrograman Mobile Multiplatform
-- **Praktikum:** Pertemuan 2 — Struktur Project & Komponen Dasar
+- **Praktikum:** Pertemuan 4 — Struktur Project & Komponen Dasar
 
-## Deskripsi Aplikasi
 
-Diary App merupakan aplikasi buku harian sederhana yang dibuat menggunakan React Native dengan Expo CLI. Aplikasi ini menampilkan catatan kegiatan sehari-hari dalam bentuk kartu yang berisi judul, tanggal, ringkasan cerita, dan gambar mood.
-
-## Fitur Aplikasi
-
-1. Menampilkan lima entri buku harian.
-2. Menampilkan judul, tanggal, dan ringkasan setiap diary.
-3. Menggunakan gambar lokal dan gambar dari internet.
-4. Menampilkan avatar pengguna pada header.
-5. Menggunakan variasi warna border dan background berdasarkan mood.
-6. Menggunakan komponen reusable `DiaryCard`.
-7. Menggunakan ScrollView agar daftar diary dapat digulir.
-8. Menggunakan StyleSheet dan Flexbox untuk mengatur tampilan.
 
 ## Tools dan Teknologi
 
@@ -52,6 +39,25 @@ Diary App merupakan aplikasi buku harian sederhana yang dibuat menggunakan React
 
 Jika koneksi lokal bermasalah, aplikasi dapat dicoba menggunakan perintah `npx expo start --tunnel`.
 
-## Kesimpulan
+Penjelasan Props dan State
 
-Melalui praktikum ini, saya dapat memahami penggunaan komponen dasar React Native seperti View, Text, Image, ScrollView, dan StyleSheet. Saya juga mempelajari penggunaan Flexbox, pengiriman data melalui props, serta pembuatan komponen reusable untuk menghasilkan kode yang lebih terstruktur dan mudah digunakan kembali.
+Props
+Props digunakan untuk mengirim data dan fungsi dari komponen induk ke komponen anak.
+- DiaryCard menerima data entri seperti title, date, preview, moodImage, dan liked.
+- DiaryCard juga menerima callback onPress untuk membuka detail dan onToggleLike untuk mengubah status like.
+- SearchBar menerima callback onChange untuk mengirim teks pencarian ke komponen induk.
+- EntryForm menerima callback onSubmit untuk mengirim entri baru ke DiaryListScreen.
+
+State
+State menyimpan data yang dapat berubah saat aplikasi berjalan.
+- SearchBar menggunakan state lokal untuk menyimpan teks yang diketik pada kolom pencarian.
+- EntryForm menggunakan state untuk nilai judul, tanggal, dan ringkasan.
+- DiaryListScreen mengelola entries (daftar diary), query (kata kunci pencarian), likedIds (ID entri yang disukai), dan selected (entri yang sedang dibuka pada modal detail).
+Perubahan state membuat antarmuka diperbarui tanpa perlu me-reload aplikasi secara manual.
+
+Fitur yang Diuji
+- Pencarian entri berdasarkan judul, ringkasan, atau tanggal.
+- Penambahan entri melalui form.
+- Perubahan status like melalui ikon hati.
+- Pembukaan dan penutupan modal detail diary.
+- Penggunaan gambar lokal dari folder assets/moods.
